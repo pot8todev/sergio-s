@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> // for srand
-#include <unistd.h>  // For usleep()kj
 
 int randomDraw(int card_qnt[]){ // random number and decrements
     int min= 0, max=12;
@@ -24,23 +23,25 @@ int randomDraw(int card_qnt[]){ // random number and decrements
     return random_number;
 }
 int sum(int farray[], int max_count){// Function recives a farray, and sums its elements.
-	float sum = 0;
+	int sum = 0;
 	int i = 0;
 	
 	for(i=0; i<=(max_count); i++){  // sum == farr[0]+ farr[1]...
     	sum += farray[i];
-	}
-	
-	//printf("\n a soma de todos os resultados é: %.1f ",sum); ~test
+	}	
 	return sum;
 }
 void memory(int deck_size, int card_qnt[], char card_names[]){
+    printf("\n the cards left in the deck are: \n");
+    printf("\n");
     for(int i=0; i<deck_size; i++){ 
-
-    printf("%c : %d, \n",card_names[i], card_qnt[i]);
-
-}
-
+    printf("| '%c' |",card_names[i]);
+    }
+    printf("\n");
+    for(int i=0; i<deck_size; i++){ 
+    printf("|  %d  |", card_qnt[i]);
+    }
+    printf("\n");
 }
 
 int main() {
@@ -51,12 +52,13 @@ int main() {
     int points = 0; //calculated at the end of each game
     int card_qnt[12];//deck de 12 cartas, o valor de cada carta sera preenchido o longo do código
     int card_value[] = {1,2,3,4,5,6,7,8,9,10,10,10,11}; //valor de cada carta, 10/j/Q/K have the same cost
-    int deck_size = (sizeof(card_value)/sizeof(card_value[0]));
     char card_names[] = {'1','2','3','4','5','6','7','8','9','J','Q','K', 'A'};
+    int deck_size = (sizeof(card_value)/sizeof(card_value[0]));
 
 
-    int hand_size = 1, playerHand[hand_size ], dealerHand[hand_size];// lists with the values in hand
-    int player_sum = sum(playerHand, hand_size) , dealer_sum = sum(dealerHand,hand_size);
+    int P_hand_size = 1, D_hand_size = 1;
+    int playerHand[P_hand_size ], dealerHand[D_hand_size];// lists with the values in hand
+    int player_sum, dealer_sum;
 
     int stopper = 0; // stopper, used both in the inner and outer loop
 
@@ -66,8 +68,11 @@ int main() {
     }   
 
     printf("warning: \n A=11, J,Q,K = 10\n The house always profit. \n And deck remembers...\n\n");
-    while (stopper == 0) 
-    {      
+    while (1) 
+    {   /* reseting variables */
+        P_hand_size= 1;
+        D_hand_size= 1; 
+        memory(deck_size,card_qnt,card_names);
         /* Draw randomly*/
         for(i = 0; i < 4; i++) //draws 4 cards, 2 for the player, 2 for the dealer
         { 
@@ -88,57 +93,52 @@ int main() {
             }
         }
 
-        
-        printf("\n one more card? 0 to proceed or 1 to stop: ");
-        scanf(" %d",&stopper);
-        /* players hit*/
-        player_sum = sum(playerHand, hand_size);
-        if (stopper == 0 && player_sum<=21)
-        {        
-            for (hand_size = 2; stopper == 0 ; hand_size++){ //infinite loop, do .push on hand_size
+
+            /* players hit*/
+        while(stopper == 0){ //infinite loop, do .push on hand_size
+            printf("\n one more card? 0 to proceed or 1 to stop: ");
+            scanf(" %d", &stopper);
+            if (stopper == 0 &&  sum(playerHand, P_hand_size)<=21){  // just in case player is delt A_A_     
+                P_hand_size++; // prepare the new space in the hand
                 card_pos= randomDraw(card_qnt);//draw
-                playerHand[hand_size] = card_value[card_pos ]; //stores the card value in the latter memory address
+                playerHand[P_hand_size] = card_value[card_pos ]; //stores the card value in the latter memory address
                 printf(" P_%c ",card_names[card_pos]); //show the name card just drawed
 
-                player_sum = sum(playerHand, hand_size);
-                if (sum(playerHand, hand_size)> 21){//if player busts
+                if (sum(playerHand, P_hand_size)> 21){//if player busts
                     printf("\n");
-                    for(int j = 0; j<=hand_size; j++){// show the players hand up to the last memory adress
+                    for(int j = 0; j<=P_hand_size; j++){// show the players hand up to the last memory adress
                         printf(" P_%d +",playerHand[j]); //show the sum
                     }
-                    printf("\n == %d BUSTED, the house wins", player_sum);
+
+                    printf("\n == %d BUSTED, the house wins", sum(playerHand, P_hand_size));
                     break;
-                }             
-                else{// if he choses to stop
-                    printf("\n one more card? 0 to proceed or 1 to stop: ");
-                    scanf(" %d",&stopper);
-                    if (stopper == 1){ 
-                        stopper=0; //player not busted, house will have to hit
-                        break; 
-                    }
-                }
+                }  
+            }           
+            else{// if he choses to stop
+                stopper=0; //player not busted, house will have to hit
+                break; 
+                
             }
         }
-
-        player_sum = sum(playerHand, hand_size);
-        dealer_sum = sum(dealerHand, 1);
+        player_sum = sum(playerHand, P_hand_size); // its a fix variable now
         printf("\n the occult card was:\n D_%c\n", x);
+
+
         /* house's hit */
-        if (player_sum <= 21 && dealer_sum<player_sum )// if player was busted, or de dealer already skip the step
+        if (player_sum <= 21 && sum(dealerHand, D_hand_size)<player_sum )// if player was busted, or de dealer already skip the step
         {
-            for (hand_size = 2; stopper == 0 ; hand_size++){
-            
+            while(sum(dealerHand, D_hand_size)< player_sum){
+                D_hand_size++;
                 card_pos= randomDraw(card_qnt);//draw
-                dealerHand[hand_size] = card_value[card_pos]; //stores the card value
+                dealerHand[D_hand_size] = card_value[card_pos]; //stores the card value
                 printf(" D_%c ",card_names[card_pos]);//show the name of the same card
 
-                dealer_sum = sum(dealerHand, hand_size);
-                if (dealer_sum>21){// house lost
+                if (sum(dealerHand, D_hand_size)>21){// house lost
                     printf("\n The house busted. The Player wins\n");
                     points = points + 100;
                     break;
                 }   
-                else if (dealer_sum>=player_sum)//house wins draws
+                else if (sum(dealerHand, D_hand_size)>=player_sum)//house wins draws
                 {
                     printf("\n the house always wins ...\n");
                     points = 0;
@@ -147,18 +147,32 @@ int main() {
                 
             }
         }
-        else if(player_sum>21){ // busted player message
-            printf("the house always wins...\n");
+        else{ // busted player message
+            printf("the house always wins\n");
             points=0;
         }
-        printf("you made %d$.\n\n the left cards int the deck are: \n", points);
-        memory(deck_size,card_qnt,card_names);
+
+        printf("you made %d$.\n", points);
+
 
         printf("\n one more game? 0 to proceed or 1 to stop \n");
         scanf(" %d",&stopper);
         if (stopper == 1){ // end of the game, dont need reseting
         break;
         }       
+        else if (stopper == 0)// empty the hands to start a new game
+        {
+            for ( i = 0; i <=P_hand_size; i++)
+            {
+                playerHand[i]= 0;
+            }
+            for ( i = 0; i <=D_hand_size; i++)
+            {
+                dealerHand[i]=0;
+            }
+            
+        }
+        
     }// quitting the game
     return 0;
 }
