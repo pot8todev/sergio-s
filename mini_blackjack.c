@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> // for srand
+#include <math.h> // for floor func
 
 int randomDraw(int card_qnt[]){ // random number and decrements
     int min= 0, max=12;
@@ -39,7 +40,7 @@ void memory(int deck_size, int card_qnt[], char card_names[]){
     }
     printf("\n");
     for(int i=0; i<deck_size; i++){ 
-    printf("|  %d  |", card_qnt[i]);
+        printf("|  %d  |", card_qnt[i]);
     }
     printf("\n");
 }
@@ -60,7 +61,7 @@ int main() {
     int playerHand[P_hand_size ], dealerHand[D_hand_size];// lists with the values in hand
     int player_sum, dealer_sum;
 
-    int stopper = 0; // stopper, used both in the inner and outer loop
+    float stopper = 0; // stopper, used both in the inner and outer loop
 
     /* deckGenerate() ALTERAVEL */
     for(i=0; i<deck_size; i++){ 
@@ -97,7 +98,23 @@ int main() {
             /* players hit*/
         while(stopper == 0){ //infinite loop, do .push on hand_size
             printf("\n one more card? 0 to proceed or 1 to stop: ");
-            scanf(" %d", &stopper);
+            if ( scanf(" %f", &stopper) != 1 ||floor(stopper) - stopper != 0)
+            {
+                while (getchar()!= '\n'); // clears buffer
+                printf(" \n \n **please, use 0(zero) or 1(one)** \n\n");
+                stopper =0;
+                continue;
+            }
+            else if (stopper != 0 && stopper !=1 ) //input is a number but not 1 or zero
+            {
+                 while (getchar()!= '\n'); // clears buffer
+                printf("\n**please, use 0(zero) or 1(one)**\n\n");
+                stopper =0;
+                continue;
+            }
+            
+            
+            
             if (stopper == 0 &&  sum(playerHand, P_hand_size)<=21){  // just in case player is delt A_A_     
                 P_hand_size++; // prepare the new space in the hand
                 card_pos= randomDraw(card_qnt);//draw
@@ -154,9 +171,25 @@ int main() {
 
         printf("you made %d$.\n", points);
 
-
+    while ( stopper == 0)
+    {
+    
         printf("\n one more game? 0 to proceed or 1 to stop \n");
-        scanf(" %d",&stopper);
+        if ( scanf(" %f", &stopper) != 1 ||floor(stopper) - stopper != 0)
+            {
+                while (getchar()!= '\n'); // clears buffer
+                printf(" \n \n **please, use 0(zero) or 1(one)** \n\n");
+                stopper =0;
+                continue;
+            }
+            else if (stopper != 0 && stopper !=1 ) //input is a number but not 1 or zero
+            {
+                 while (getchar()!= '\n'); // clears buffer
+                printf("\n**please, use 0(zero) or 1(one)**\n\n");
+                stopper =0;
+                continue;
+            }
+    }
         if (stopper == 1){ // end of the game, dont need reseting
         break;
         }       
@@ -174,5 +207,5 @@ int main() {
         }
         
     }// quitting the game
-    return 0;
-}
+
+    printf("bye"); return 0; }
